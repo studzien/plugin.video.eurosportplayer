@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from common import *
+import m3u8
 
 class Items:
 
@@ -53,9 +54,21 @@ class Items:
         xbmcplugin.addDirectoryItem(addon_handle, build_url(data), listitem, folder)
         
     def play(self, path):
+        if re.search("squashtv", path):
+            self.play_squash(path)
+        else:
+            self.play_url(path)
+
+    def play_squash(self, path):
+        m3u8_obj = m3u8.load(path)
+        ps = sorted(m3u8_obj.playlists,
+                    lambda p1,p2: cmp(p1.stream_info.bandwidth, p2.stream_info.bandwidth))
+        self.play_url(re.sub('manifest.m3u8', ps[-1].uri, path))
+
+    def play_url(self, path):
         listitem = xbmcgui.ListItem(path=path)
         xbmcplugin.setResolvedUrl(addon_handle, True, listitem)
-        
+
 items = Items()
 
 def channel(data):
