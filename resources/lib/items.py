@@ -54,7 +54,7 @@ class Items:
         xbmcplugin.addDirectoryItem(addon_handle, build_url(data), listitem, folder)
         
     def play(self, path):
-        if re.search("squashtv", path):
+        if re.search('squashtv', path) and re.search('manifest.m3u8', path):
             self.play_squash(path)
         else:
             self.play_url(path)
