@@ -2,6 +2,8 @@
 
 from common import *
 import m3u8
+import urllib
+import requests
 
 class Items:
 
@@ -60,10 +62,17 @@ class Items:
             self.play_url(path)
 
     def play_squash(self, path):
-        m3u8_obj = m3u8.load(path)
-        ps = sorted(m3u8_obj.playlists,
-                    lambda p1,p2: cmp(p1.stream_info.bandwidth, p2.stream_info.bandwidth))
-        self.play_url(re.sub('manifest.m3u8', ps[-1].uri, path))
+        r = requests.get(path)
+        m3u8_obj = m3u8.loads(r.text)
+        ps = sorted(m3u8_obj.playlists, key = lambda p: p.stream_info.bandwidth)
+        base_url = re.split('manifest.m3u8', path)[0]
+        url = base_url + ps[-1].uri + '|' + self.squashtv_headers(r.cookies['hdnea'])
+        self.play_url(url)
+
+    def squashtv_headers(self, hdnea):
+        return urllib.urlencode(
+                {'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 5.0.1; ALE-L21 Build/HuaweiALE-L21)',
+                 'Cookie': 'hdnea=' + hdnea})
 
     def play_url(self, path):
         listitem = xbmcgui.ListItem(path=path)
